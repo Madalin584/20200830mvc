@@ -1,7 +1,11 @@
 package sda.spring.mvc.model.dto;
 
+import javax.validation.constraints.Size;
+
 public class UserDTO {
     private Long id;
+    //valideaza campurile
+    @Size(min = 2, max = 20)
     private String name;
     private String email;
     private String country;
