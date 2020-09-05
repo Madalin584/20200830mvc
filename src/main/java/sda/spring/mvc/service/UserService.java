@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import sda.spring.mvc.model.User;
+import sda.spring.mvc.model.dto.UserDTO;
 import sda.spring.mvc.repository.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,8 +20,21 @@ public class UserService {
         this.repository = repository;
     }
 
-    public List<User> findAll() {
-        return repository.findAll();
+    public List<UserDTO> findAll() {
+        List<User> users = repository.findAll();
+        List<UserDTO> userDTOS = new ArrayList<>();
+
+        for (User each : users) {
+            UserDTO userDTO = new UserDTO()
+                    .setCountry(each.getCountry())
+                    .setEmail(each.getEmail())
+                    .setName(each.getName())
+                    .setId(each.getId()
+                    );
+            userDTOS.add(userDTO);
+        }
+
+        return userDTOS;
     }
 
     public User save(User user) {

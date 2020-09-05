@@ -1,47 +1,77 @@
 package sda.spring.mvc.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import sda.spring.mvc.model.User;
+import sda.spring.mvc.model.dto.UserDTO;
 import sda.spring.mvc.service.UserService;
 
+import javax.validation.Valid;
 import java.util.List;
 
-@RestController
-@RequestMapping("/users")
+/**
+ * Paths:
+ * "/"
+ * "/signup"
+ * "/adduser"
+ * "/edit/{id}" -- GET
+ * "/update/{id}" -- POST
+ * "/delete/{id}"
+ */
+@Controller
 public class UserController {
     private UserService userService;
+    private final String index = "index";
 
     @Autowired
     private UserController(UserService userService) {
         this.userService = userService;
     }
 
-    @GetMapping
-    public ResponseEntity<List<User>> findAll() {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.findAll());
+    @GetMapping("/")
+    public String listAll(Model model) {
+        List<UserDTO> userDTOS = userService.findAll();
+        model.addAttribute("users", userDTOS);
+        return index;
     }
 
-    @PostMapping
-    public ResponseEntity<User> save(@RequestBody User user) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(user));
+    @PostMapping("/adduser")
+    public String save(@Valid User user, BindingResult bindingResult, Model model) {
+        //daca rezultatul are erori intorc aceeasi pagina
+        if (bindingResult.hasErrors()) {
+            return "user-add";
+        }
+        userService.save(user);
+        model.addAttribute("users", userService.findAll());
+        return index;
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<User> findById(@PathVariable("id") Long id) {
-        return ResponseEntity.status(HttpStatus.FOUND).body(userService.getById(id));
+    @GetMapping("/signup")
+    public String getSignupPage(User user) {
+        return "user-add";
     }
 
-    @DeleteMapping("/{id}")
-    public void remove(@PathVariable("id") Long id) {
+    @GetMapping("/delete/{id}")
+    public String deleteUser(Model model, @PathVariable("id") Long id) {
         userService.remove(id);
+        model.addAttribute("users", userService.findAll());
+        return index;
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody User user) {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.update(id, user));
+    @GetMapping("/edit/{id}")
+    public String updateUserPageView(Model model, @PathVariable Long id) {
+        //aduce resursa si o afiseaza utilizatorului
+        model.addAttribute("user", userService.getById(id));
+        return "user-edit";
     }
 
+    @PostMapping("/update/{id}")
+    public String update(@Valid User user, @PathVariable Long id, BindingResult result, Model model) {
+        userService.save(user);
+        model.addAttribute("users", userService.findAll());
+        return "redirect:/";
+    }
 }
