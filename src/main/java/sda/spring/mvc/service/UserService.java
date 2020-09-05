@@ -1,7 +1,6 @@
 package sda.spring.mvc.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import sda.spring.mvc.model.User;
 import sda.spring.mvc.model.dto.UserDTO;
@@ -9,7 +8,6 @@ import sda.spring.mvc.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserService {
@@ -37,12 +35,21 @@ public class UserService {
         return userDTOS;
     }
 
-    public User save(User user) {
+    public User save(UserDTO userDTO) {
+        User user = new User()
+                .setName(userDTO.getName())
+                .setCountry(userDTO.getCountry())
+                .setEmail(userDTO.getEmail());
         return repository.save(user);
     }
 
-    public User getById(Long id) {
-        return repository.findById(id).get();
+    public UserDTO getById(Long id) {
+        User user = repository.findById(id).get();
+        return new UserDTO()
+                .setId(user.getId())
+                .setName(user.getName())
+                .setCountry(user.getCountry())
+                .setEmail(user.getEmail());
     }
 
 
@@ -50,11 +57,5 @@ public class UserService {
         repository.deleteById(id);
     }
 
-    public User update(Long id, User user) {
-        User userFromDB = repository.findById(id).get();
-        userFromDB.setCountry(user.getCountry());
-        userFromDB.setEmail(user.getEmail());
-        userFromDB.setName(user.getName());
-        return repository.save(userFromDB);
-    }
+
 }
